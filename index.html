@@ -407,7 +407,9 @@ fieldset.bare legend { padding: 0; margin-bottom: 6px; }
 .g-item .icon-btn { position: absolute; top: 4px; right: 4px; width: 28px; height: 28px; background: var(--glass-strong); color: var(--fg); }
 .g-add { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; aspect-ratio: 1; border: 1.5px dashed var(--line); border-radius: 10px; cursor: pointer; color: var(--muted); font-size: .76rem; font-weight: 600; text-align: center; padding: 6px; }
 .g-add:hover, .g-add:focus-within { border-color: var(--accent); color: var(--accent); }
-.list-row.cols-4 { grid-template-columns: minmax(150px, .9fr) minmax(0, 1fr) minmax(0, 1.4fr) auto; }
+.list-row.cols-4 { grid-template-columns: minmax(150px, .9fr) minmax(0, 1fr) minmax(0, 1.4fr) auto auto; }
+.row-move { display: inline-flex; gap: 2px; }
+.row-move .icon-btn { width: 30px; }
 .list-row .row-extra { grid-column: 1 / -1; }
 .svc-pick { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .svc-dot { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; color: #fff; flex: none; overflow: hidden; }
@@ -587,8 +589,9 @@ fieldset.bare legend { padding: 0; margin-bottom: 6px; }
   .co-edit-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 760px) {
-  .list-row.cols-4 { grid-template-columns: 1fr; }
-  .list-row.cols-4 > .icon-btn { justify-self: end; }
+  .list-row.cols-4 { grid-template-columns: 1fr auto; }
+  .list-row.cols-4 > :not(.icon-btn):not(.row-move) { grid-column: 1 / -1; }
+  .list-row.cols-4 > .row-move { justify-self: end; }
   .gal-row { grid-template-columns: 56px minmax(0, 1fr) auto; }
   .gal-row select { grid-column: 2; }
   .person-card { grid-template-columns: 1fr; }
@@ -644,12 +647,17 @@ fieldset.bare legend { padding: 0; margin-bottom: 6px; }
 
 /* ───────────────────────── Constants ───────────────────────── */
 
-const APP_VERSION = '1.0.0';
+const APP_VERSION = '1.1.0';
 const LOGO = 'logo-exordy.png';
 const PANEL_URL = 'exordy.com/exordy-qr-panel';
 const DEFAULT_SHORT_BASE = 'exordy.com/q/';
 
 const CHANGELOG = [
+  { version: '1.1.0', date: '2026-10-21', items: [
+    'Multi-URL y Redes sociales: cada enlace tiene botones para subirlo o bajarlo y elegir el orden en que se ve.',
+    'Nuevo tipo «Contacto + enlaces»: una página con el botón «Guardar contacto» (vCard para iPhone y Android) y tus enlaces.',
+    'El panel queda a pantalla completa dentro de exordy.com, con una sola barra de scroll.'
+  ] },
   { version: '1.0.0', date: '2026-10-20', items: [
     'Primera versión de EXORDY QR PANEL para Exordy S.A., en una página privada de exordy.com.',
     'QR estáticos y dinámicos de 13 tipos con enlaces cortos exordy.com/q/, pausa, cambio de destino y descarga en PNG, SVG, JPG y GIF.',
@@ -693,6 +701,8 @@ const ICONS = {
   trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
   chevL: '<path d="M15 6l-6 6 6 6"/>',
   chevR: '<path d="M9 6l6 6-6 6"/>',
+  chevU: '<path d="M6 15l6-6 6 6"/>',
+  chevD: '<path d="M6 9l6 6 6-6"/>',
   sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
   moon: '<path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/>',
   monitor: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',
@@ -734,24 +744,7 @@ const ICONS = {
   playstore: '<path d="M5 3.5v17l9-8.5z"/><path d="M5 3.5l12 7-3 2M5 20.5l12-7-3-1"/>'
 };
 
-const QR_TYPES = [
-  { id: 'url', label: 'Sitio web', desc: 'Abre cualquier enlace', icon: 'link', modes: ['dynamic', 'static'],
-    fields: [{ k: 'url', label: 'URL de destino', type: 'url', ph: 'https://www.ejemplo.com', req: true }] },
-  { id: 'pdf', label: 'PDF', desc: 'Muestra un documento PDF', icon: 'pdf', modes: ['dynamic'],
-    fields: [
-      { k: 'file', label: 'Archivo PDF', type: 'file', accept: 'application/pdf', req: true, help: 'Se sube a tu biblioteca de medios de Wix (máx. 50 MB). Puedes reemplazarlo luego sin cambiar el QR.' },
-      { k: 'pdfTitle', label: 'Título que verá el visitante', type: 'text', ph: 'Carta de temporada' },
-      { k: 'pdfDesc', label: 'Descripción', type: 'textarea', ph: 'Una línea que explique qué contiene el documento' }] },
-  { id: 'multiurl', label: 'Multi-URL', desc: 'Varios enlaces en una página', icon: 'layers', modes: ['dynamic'],
-    fields: [
-      { k: 'pageTitle', label: 'Título de la página', type: 'text', ph: 'Nombre de la marca', req: true },
-      { k: 'links', label: 'Enlaces', type: 'linklist', req: true }] },
-  { id: 'files', label: 'Archivos', desc: 'Imágenes, documentos o ZIP', icon: 'folder', modes: ['dynamic'],
-    fields: [
-      { k: 'pageTitle', label: 'Título de la página', type: 'text', ph: 'Material de la presentación', req: true },
-      { k: 'files', label: 'Archivos', type: 'files', req: true, help: 'Se suben a tu biblioteca de medios de Wix (máx. 50 MB cada uno).' }] },
-  { id: 'vcard', label: 'Contacto', desc: 'Guarda nombre, teléfono y correo en iPhone o Android', icon: 'user', modes: ['dynamic', 'static'],
-    fields: [
+const VCARD_FIELDS = [
       { k: 'firstName', label: 'Nombre', type: 'text', req: true, half: true, ac: 'given-name' },
       { k: 'lastName', label: 'Apellido', type: 'text', half: true, ac: 'family-name' },
       { k: 'mobile', label: 'Teléfono móvil', type: 'tel', ph: '+593 99 000 0000', half: true },
@@ -765,7 +758,29 @@ const QR_TYPES = [
       { k: 'state', label: 'Provincia o estado', type: 'text', half: true },
       { k: 'zip', label: 'Código postal', type: 'text', half: true },
       { k: 'country', label: 'País', type: 'text', half: true },
-      { k: 'note', label: 'Nota', type: 'textarea' }] },
+      { k: 'note', label: 'Nota', type: 'textarea' }
+];
+
+const QR_TYPES = [
+  { id: 'url', label: 'Sitio web', desc: 'Abre cualquier enlace', icon: 'link', modes: ['dynamic', 'static'],
+    fields: [{ k: 'url', label: 'URL de destino', type: 'url', ph: 'https://www.ejemplo.com', req: true }] },
+  { id: 'pdf', label: 'PDF', desc: 'Muestra un documento PDF', icon: 'pdf', modes: ['dynamic'],
+    fields: [
+      { k: 'file', label: 'Archivo PDF', type: 'file', accept: 'application/pdf', req: true, help: 'Se sube a tu biblioteca de medios de Wix (máx. 50 MB). Puedes reemplazarlo luego sin cambiar el QR.' },
+      { k: 'pdfTitle', label: 'Título que verá el visitante', type: 'text', ph: 'Carta de temporada' },
+      { k: 'pdfDesc', label: 'Descripción', type: 'textarea', ph: 'Una línea que explique qué contiene el documento' }] },
+  { id: 'multiurl', label: 'Multi-URL', desc: 'Varios enlaces en una página', icon: 'layers', modes: ['dynamic'],
+    fields: [
+      { k: 'pageTitle', label: 'Título de la página', type: 'text', ph: 'Nombre de la marca', req: true },
+      { k: 'links', label: 'Enlaces', type: 'linklist', req: true }] },
+  { id: 'vcardlinks', label: 'Contacto + enlaces', desc: 'Botón «Guardar contacto» (iPhone y Android) y varios enlaces', icon: 'idcard', modes: ['dynamic'],
+    fields: [...VCARD_FIELDS, { k: 'links', label: 'Enlaces', type: 'linklist', req: true }] },
+  { id: 'files', label: 'Archivos', desc: 'Imágenes, documentos o ZIP', icon: 'folder', modes: ['dynamic'],
+    fields: [
+      { k: 'pageTitle', label: 'Título de la página', type: 'text', ph: 'Material de la presentación', req: true },
+      { k: 'files', label: 'Archivos', type: 'files', req: true, help: 'Se suben a tu biblioteca de medios de Wix (máx. 50 MB cada uno).' }] },
+  { id: 'vcard', label: 'Contacto', desc: 'Guarda nombre, teléfono y correo en iPhone o Android', icon: 'user', modes: ['dynamic', 'static'],
+    fields: VCARD_FIELDS },
   { id: 'social', label: 'Redes sociales', desc: 'Todas tus redes en una página', icon: 'share', modes: ['dynamic'],
     fields: [
       { k: 'pageTitle', label: 'Nombre que se muestra', type: 'text', req: true },
@@ -1478,6 +1493,7 @@ function destinationLabel(code) {
     case 'multiurl': return `${(d.links || []).filter((l) => l.url).length} enlaces · ${d.pageTitle || ''}`;
     case 'files': return `${(d.files || []).length} archivos · ${d.pageTitle || ''}`;
     case 'vcard': return [d.firstName, d.lastName].filter(Boolean).join(' ') + (d.org ? ` · ${d.org}` : '');
+    case 'vcardlinks': return [d.firstName, d.lastName].filter(Boolean).join(' ') + ` · ${(d.links || []).filter((l) => l.url).length} enlaces`;
     case 'social': return `${(d.socials || []).filter((s) => s.url).length} redes · ${d.pageTitle || ''}`;
     case 'text': return (d.text || '').slice(0, 80);
     case 'app': return [d.iosUrl && 'App Store', d.androidUrl && 'Google Play'].filter(Boolean).join(' + ') || d.fallbackUrl || '';
@@ -2226,7 +2242,9 @@ let previewTest = false;
 const dlChoice = { format: 'png', size: 1024 };
 
 /* Types whose dynamic version opens a page hosted by the panel (and so can carry the client's branding). */
-const PAGE_TYPES = ['pdf', 'multiurl', 'files', 'vcard', 'social', 'app', 'maps'];
+const PAGE_TYPES = ['pdf', 'multiurl', 'vcardlinks', 'files', 'vcard', 'social', 'app', 'maps'];
+/* Tipos que muestran los datos de una persona y el botón «Guardar contacto». */
+const CONTACT_TYPES = ['vcard', 'vcardlinks'];
 const DEFAULT_PAGE = { avatar: null, cover: null, coverType: 'color', coverGradient: null, bgType: 'color', bgColor: '#F5F8FA', bgColor2: '#DCEFF5', bgGradient: null, bgImage: null,
   primary: '#054781', textColor: '#15212A', btnBg: '#FFFFFF', btnText: '#15212A', btnStyle: 'rounded', brandIcons: true, gallery: [] };
 const BTN_RADIUS = { rounded: '12px', pill: '999px', square: '4px' };
@@ -2272,7 +2290,7 @@ function setPath(path, value) {
 }
 
 function emptyData(type) {
-  if (type === 'multiurl') return { links: [{ icon: 'web', label: '', url: '' }, { icon: 'instagram', label: '', url: '' }] };
+  if (type === 'multiurl' || type === 'vcardlinks') return { links: [{ icon: 'web', label: '', url: '' }, { icon: 'instagram', label: '', url: '' }] };
   if (type === 'social') return { socials: [{ network: 'instagram', label: '', url: '' }, { network: 'facebook', label: '', url: '' }] };
   if (type === 'files') return { files: [] };
   return {};
@@ -2305,6 +2323,7 @@ function companyData(co, type) {
   const hours = hoursSummary(co.hours, co.hoursNote);
   switch (type) {
     case 'url': if (co.website) d.url = co.website; break;
+    case 'vcardlinks': Object.assign(d, companyData(co, 'vcard'), pickDefined({ links: companyData(co, 'multiurl').links })); break;
     case 'vcard': Object.assign(d, pickDefined({ org: co.name, website: co.website, email: co.email, phoneWork: co.phone,
       street: [co.address, co.number].filter(Boolean).join(' '), city: co.city, state: co.state, country: co.country })); break;
     case 'social':
@@ -2385,7 +2404,7 @@ function renderCreate() {
   const co = draftCompany();
   const original = editingId ? state.codes.find((c) => c.id === editingId) : null;
   const landing = hasLanding(draft);
-  const people = draft.type === 'vcard' ? (co?.people || []) : [];
+  const people = CONTACT_TYPES.includes(draft.type) ? (co?.people || []) : [];
   $('#view').innerHTML = `
     <header class="page-head">
       <div><p class="eyebrow">${editingId ? 'Editar código' : 'Nuevo código'}</p><h1>${editingId ? esc(original?.title || 'Editar QR') : 'Crear código QR'}</h1>
@@ -2518,6 +2537,7 @@ function fieldHTML(f, value, err, scope = 'data') {
             <select class="input" aria-label="Ícono del enlace ${i + 1}" data-list="links" data-idx="${i}" data-key="icon">${serviceOptions(l.icon || 'web')}</select></div>
           <input class="input" aria-label="Texto del botón ${i + 1}" placeholder="${esc(svc.id === 'custom' ? 'Texto del botón' : svc.label)}" data-list="links" data-idx="${i}" data-key="label" value="${esc(l.label)}">
           <input class="input" type="url" aria-label="URL del enlace ${i + 1}" placeholder="https://" data-list="links" data-idx="${i}" data-key="url" value="${esc(l.url)}">
+          <span class="row-move"><button class="icon-btn" type="button" data-action="move-row" data-list="links" data-idx="${i}" data-dir="-1" aria-label="Subir enlace ${i + 1}" title="Subir" ${i === 0 ? 'disabled' : ''}>${icon('chevU')}</button><button class="icon-btn" type="button" data-action="move-row" data-list="links" data-idx="${i}" data-dir="1" aria-label="Bajar enlace ${i + 1}" title="Bajar" ${i === links.length - 1 ? 'disabled' : ''}>${icon('chevD')}</button></span>
           <button class="icon-btn" type="button" data-action="remove-row" data-list="links" data-idx="${i}" aria-label="Quitar enlace ${i + 1}" ${links.length < 2 ? 'disabled' : ''}>${icon('trash')}</button>
           ${l.icon === 'custom' ? `<div class="row-extra"><label class="btn btn-ghost btn-sm">${icon('upload')}${customSrc ? 'Cambiar ícono' : 'Subir ícono propio'}<input type="file" accept="image/*" class="sr-only" data-img-upload="draft.data.links.${i}.iconImg" data-img-kind="icon"></label></div>` : ''}
           </div>`;
@@ -2537,6 +2557,7 @@ function fieldHTML(f, value, err, scope = 'data') {
             <select class="input" aria-label="Red ${i + 1}" data-list="socials" data-idx="${i}" data-key="network">${serviceOptions(s.network, SOCIAL_NETWORKS.map((n) => n.id))}</select></div>
           <input class="input" aria-label="Nombre del botón ${i + 1}" placeholder="${esc(svc.label)}" data-list="socials" data-idx="${i}" data-key="label" value="${esc(s.label || '')}">
           <input class="input" type="url" aria-label="Enlace de la red ${i + 1}" placeholder="https://" data-list="socials" data-idx="${i}" data-key="url" value="${esc(s.url)}">
+          <span class="row-move"><button class="icon-btn" type="button" data-action="move-row" data-list="socials" data-idx="${i}" data-dir="-1" aria-label="Subir red ${i + 1}" title="Subir" ${i === 0 ? 'disabled' : ''}>${icon('chevU')}</button><button class="icon-btn" type="button" data-action="move-row" data-list="socials" data-idx="${i}" data-dir="1" aria-label="Bajar red ${i + 1}" title="Bajar" ${i === rows.length - 1 ? 'disabled' : ''}>${icon('chevD')}</button></span>
           <button class="icon-btn" type="button" data-action="remove-row" data-list="socials" data-idx="${i}" aria-label="Quitar red ${i + 1}" ${rows.length < 2 ? 'disabled' : ''}>${icon('trash')}</button></div>`;
         }).join('')}
         </div>
@@ -2624,14 +2645,14 @@ function pageControls() {
     <input type="color" id="p-${k}" data-page-color="${k}" value="${esc(P[k])}" aria-label="${label}" list="${paletteId}">
     <input class="input" data-page-hex="${k}" value="${esc(P[k])}" maxlength="7" aria-label="${label} en hexadecimal"></div></div>`;
   const seg = (k, label, options) => `<div class="seg" role="radiogroup" aria-label="${label}">${options.map(([v, l]) => `<button type="button" role="radio" aria-checked="${P[k] === v}" data-page-pick="${k}" data-value="${v}">${l}</button>`).join('')}</div>`;
-  const avatarLabel = draft.type === 'app' ? 'Ícono de la app' : draft.type === 'vcard' ? 'Foto o logo' : 'Logo o foto de perfil';
+  const avatarLabel = draft.type === 'app' ? 'Ícono de la app' : CONTACT_TYPES.includes(draft.type) ? 'Foto o logo' : 'Logo o foto de perfil';
   const galleryLabel = draft.type === 'maps' ? 'Fotos del lugar (fachada, interior…)' : 'Capturas o fotos de la app';
   return `<div class="form-stack">
     ${paletteDatalist(paletteId, co ? companyPalette(co) : Object.values(DEFAULT_COLORS))}
     ${co ? `<div class="brand-apply">${companyMini(co)}<button type="button" class="btn btn-sm" data-action="apply-brand">${icon('palette')}Usar logo, portada y colores de la empresa</button></div>`
       : '<p class="help">Elige una empresa en el paso 2 para aplicar su logo, portada y colores con un clic.</p>'}
     <div class="design-grid">
-      ${imagePicker('draft.page.avatar', P.avatar, avatarLabel, draft.type === 'vcard' ? 'person' : 'avatar', co?.logo)}
+      ${imagePicker('draft.page.avatar', P.avatar, avatarLabel, CONTACT_TYPES.includes(draft.type) ? 'person' : 'avatar', co?.logo)}
       ${imagePicker('draft.page.cover', P.cover, 'Portada', 'cover', co?.cover)}
     </div>
     ${P.cover ? '' : `<div class="field"><span class="label">Portada sin imagen</span>${seg('coverType', 'Portada sin imagen', [['color', 'Color principal'], ['gradient', 'Degradado']])}
@@ -2843,10 +2864,19 @@ function brandedLanding(code) {
         + (d.city || d.country ? btn('maps', [d.city, d.country].filter(Boolean).join(', ')) : '') + mainBtn('user', T.saveContact);
       break;
     }
+    case 'vcardlinks': {
+      title = [d.firstName, d.lastName].filter(Boolean).join(' ') || 'Nombre Apellido';
+      sub = [d.jobTitle, d.org].filter(Boolean).join(' · ');
+      initials = ((d.firstName || ' ')[0] + (d.lastName || ' ')[0]).trim().toUpperCase();
+      const rows = (d.links || []).filter((l) => l.label || l.url);
+      body = mainBtn('user', T.saveContact) + (d.mobile ? btn('phone', d.mobile) : '') + (d.email ? btn('email', d.email) : '')
+        + (rows.map((l) => btn(l.icon || 'web', l.label || serviceLabel(l.icon, code.lang), l.iconImg)).join('') || note('Agrega enlaces para verlos aquí.'));
+      break;
+    }
     default: break;
   }
   const avatarSrc = img(P.avatar);
-  const isPhoto = code.type === 'vcard' && P.avatar && P.avatar !== OZ_LOGO_REF && P.avatar !== findCompany(code.companyId)?.logo;
+  const isPhoto = CONTACT_TYPES.includes(code.type) && P.avatar && P.avatar !== OZ_LOGO_REF && P.avatar !== findCompany(code.companyId)?.logo;
   const avatar = avatarSrc ? `<div class="lp-avatar ${isPhoto ? '' : 'logo'}"><img src="${esc(avatarSrc)}" alt=""></div>`
     : initials ? `<div class="lp-avatar" style="color:${esc(P.primary)}">${esc(initials)}</div>` : '';
   return `<div class="lp" style="background:${esc(bg)};color:${esc(P.textColor)}">${bgImg}${cover}
@@ -3635,7 +3665,7 @@ function companySampleCode(co, type) {
   const data = { ...emptyData(type), ...companyData(co, type) };
   const person = (co.people || []).find((p) => p.firstName || p.lastName);
   switch (type) {
-    case 'vcard':
+    case 'vcard': case 'vcardlinks':
       if (person) Object.assign(data, pickDefined({ firstName: person.firstName, lastName: person.lastName, jobTitle: person.jobTitle, email: person.email, mobile: person.phone || person.whatsapp }));
       else if (!data.firstName) data.firstName = co.name;
       break;
@@ -3647,7 +3677,7 @@ function companySampleCode(co, type) {
     default: break;
   }
   const page = brandPage(co, type);
-  if (type === 'vcard' && person?.photo) page.avatar = person.photo;
+  if (CONTACT_TYPES.includes(type) && person?.photo) page.avatar = person.photo;
   return { id: 'preview', slug: 'vista', type, mode: t.modes.includes('dynamic') ? 'dynamic' : 'static', status: 'active', companyId: co.id,
     data, page, design: { ...DEFAULT_DESIGN } };
 }
@@ -4682,6 +4712,19 @@ function handleAction(action, el) {
       const list = el.dataset.list;
       draft.data[list] = [...(draft.data[list] || []), list === 'links' ? { icon: 'web', label: '', url: '' } : { network: 'instagram', label: '', url: '' }];
       rerenderTypeFields(); updatePreviewSoon(); break;
+    }
+    case 'move-row': {
+      const list = el.dataset.list;
+      const rows = [...(draft.data[list] || [])];
+      const i = Number(el.dataset.idx), j = i + Number(el.dataset.dir);
+      if (j < 0 || j >= rows.length) break;
+      [rows[i], rows[j]] = [rows[j], rows[i]];
+      draft.data[list] = rows;
+      rerenderTypeFields(); updatePreviewSoon();
+      // El foco sigue al enlace que se movió, para poder moverlo varias posiciones seguidas con el teclado.
+      const moved = `[data-action="move-row"][data-list="${list}"][data-idx="${j}"]`;
+      (document.querySelector(`${moved}[data-dir="${el.dataset.dir}"]:not([disabled])`) || document.querySelector(`${moved}:not([disabled])`))?.focus();
+      break;
     }
     case 'remove-row': {
       const list = el.dataset.list;
